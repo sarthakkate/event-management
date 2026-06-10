@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Profile - EventHub</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/responsive.css">
+  <link rel="stylesheet" href="../css/animations.css">
+  <style>
+    .profile-container {
+      display: grid;
+      grid-template-columns: 300px 1fr;
+      gap: 2rem;
+      margin: 2rem 0;
+    }
+
+    .profile-sidebar {
+      background: white;
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+      padding: 2rem;
+      height: fit-content;
+    }
+
+    .profile-avatar {
+      width: 150px;
+      height: 150px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 3rem;
+      color: white;
+      margin: 0 auto 1rem;
+    }
+
+    .profile-name {
+      text-align: center;
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+    }
+
+    .profile-role {
+      text-align: center;
+      color: var(--text-light);
+      margin-bottom: 2rem;
+      font-size: 0.875rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .profile-menu {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .profile-menu button {
+      padding: 0.75rem 1rem;
+      border: none;
+      background: var(--light-gray);
+      color: var(--text-dark);
+      border-radius: 5px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-align: left;
+    }
+
+    .profile-menu button:hover {
+      background: var(--border-color);
+      color: var(--primary-color);
+    }
+
+    .profile-menu button.active {
+      background: var(--primary-color);
+      color: white;
+    }
+
+    .profile-content {
+      background: white;
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+      padding: 2rem;
+    }
+
+    .form-section {
+      display: none;
+    }
+
+    .form-section.active {
+      display: block;
+    }
+
+    .form-section h2 {
+      margin-bottom: 2rem;
+      color: var(--text-dark);
+    }
+
+    .info-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem;
+      margin-bottom: 2rem;
+    }
+
+    @media (max-width: 768px) {
+      .profile-container {
+        grid-template-columns: 1fr;
+      }
+
+      .info-row {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Navigation -->
+  <nav>
+    <div class="container">
+      <div class="logo" onclick="window.location.href='index.html'" style="cursor: pointer;">📅 EventHub</div>
+      <ul>
+        <li><a href="events.html">Events</a></li>
+        <li><a href="my-events.html">My Events</a></li>
+      </ul>
+      <div class="auth-buttons" id="authButtons"></div>
+    </div>
+  </nav>
+
+  <!-- Profile Content -->
+  <div class="container">
+    <div class="profile-container" style="margin: 2rem 0;">
+      <div class="profile-sidebar">
+        <div class="profile-avatar" id="profileAvatar">👤</div>
+        <div class="profile-name" id="profileName">Loading...</div>
+        <div class="profile-role" id="profileRole"></div>
+        <div class="profile-menu">
+          <button class="active" onclick="switchTab('info')">Profile Info</button>
+          <button onclick="switchTab('password')">Change Password</button>
+          <button class="btn btn-danger" style="margin-top: 1rem;" onclick="logout()">Logout</button>
+        </div>
+      </div>
+
+      <div class="profile-content">
+        <!-- Profile Info Section -->
+        <div id="infoSection" class="form-section active">
+          <h2>Profile Information</h2>
+          <form id="profileForm">
+            <div class="info-row">
+              <div class="form-group">
+                <label for="name">Full Name</label>
+                <input type="text" id="name" name="name" required>
+              </div>
+              <div class="form-group">
+                <label for="email">Email Address</label>
+                <input type="email" id="email" name="email" readonly style="background: var(--light-gray);">
+              </div>
+            </div>
+
+            <div class="info-row">
+              <div class="form-group">
+                <label for="phone">Phone Number</label>
+                <input type="tel" id="phone" name="phone">
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="bio">Bio</label>
+              <textarea id="bio" name="bio" placeholder="Tell us about yourself..."></textarea>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Save Changes</button>
+          </form>
+        </div>
+
+        <!-- Password Section -->
+        <div id="passwordSection" class="form-section">
+          <h2>Change Password</h2>
+          <form id="passwordForm" style="max-width: 500px;">
+            <div class="form-group">
+              <label for="oldPassword">Current Password</label>
+              <input type="password" id="oldPassword" name="oldPassword" required>
+            </div>
+
+            <div class="form-group">
+              <label for="newPassword">New Password</label>
+              <input type="password" id="newPassword" name="newPassword" required>
+            </div>
+
+            <div class="form-group">
+              <label for="confirmPassword">Confirm New Password</label>
+              <input type="password" id="confirmPassword" name="confirmPassword" required>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Update Password</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer>
+    <div class="container">
+      <p>&copy; 2026 EventHub. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <script src="../js/api.js"></script>
+  <script src="../js/utils.js"></script>
+  <script>
+    page.requireAuth();
+
+    async function loadProfile() {
+      try {
+        const { user } = await api.getMe();
+        document.getElementById('profileName').textContent = user.name;
+        document.getElementById('profileRole').textContent = user.role;
+        document.getElementById('name').value = user.name;
+        document.getElementById('email').value = user.email;
+        document.getElementById('phone').value = user.phone || '';
+        document.getElementById('bio').value = user.bio || '';
+      } catch (error) {
+        Toast.error('Error loading profile');
+      }
+    }
+
+    document.getElementById('profileForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const data = {
+        name: document.getElementById('name').value,
+        phone: document.getElementById('phone').value,
+        bio: document.getElementById('bio').value,
+      };
+
+      try {
+        await api.updateProfile(data);
+        Toast.success('Profile updated successfully');
+        loadProfile();
+      } catch (error) {
+        Toast.error('Error updating profile');
+      }
+    });
+
+    document.getElementById('passwordForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const newPassword = document.getElementById('newPassword').value;
+      const confirmPassword = document.getElementById('confirmPassword').value;
+
+      if (newPassword !== confirmPassword) {
+        Toast.error('Passwords do not match');
+        return;
+      }
+
+      const data = {
+        oldPassword: document.getElementById('oldPassword').value,
+        newPassword: newPassword,
+      };
+
+      try {
+        await api.changePassword(data);
+        Toast.success('Password changed successfully');
+        document.getElementById('passwordForm').reset();
+        switchTab('info');
+      } catch (error) {
+        Toast.error('Error changing password');
+      }
+    });
+
+    function switchTab(tab) {
+      document.querySelectorAll('.form-section').forEach(el => {
+        el.classList.remove('active');
+      });
+      document.querySelectorAll('.profile-menu button').forEach(el => {
+        el.classList.remove('active');
+      });
+
+      if (tab === 'info') {
+        document.getElementById('infoSection').classList.add('active');
+      } else if (tab === 'password') {
+        document.getElementById('passwordSection').classList.add('active');
+      }
+
+      event.target.classList.add('active');
+    }
+
+    function updateUI() {
+      const authButtons = document.getElementById('authButtons');
+
+      if (storage.isAuthenticated()) {
+        const user = storage.getUser();
+        authButtons.innerHTML = `
+          <div class="user-menu">
+            <button onclick="toggleMenu()">${user.name} ▼</button>
+            <div class="dropdown-menu" id="userMenu">
+              <a href="profile.html">Profile</a>
+              <a href="my-events.html">My Events</a>
+              ${storage.isAdmin() ? '<a href="admin-dashboard.html">Admin Dashboard</a>' : ''}
+              <a href="#" onclick="logout(); return false;">Logout</a>
+            </div>
+          </div>
+        `;
+      }
+    }
+
+    function toggleMenu() {
+      const menu = document.getElementById('userMenu');
+      if (menu) {
+        menu.classList.toggle('active');
+      }
+    }
+
+    function logout() {
+      storage.clearUser();
+      api.logout();
+      window.location.href = 'index.html';
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      updateUI();
+      loadProfile();
+    });
+
+    document.addEventListener('click', (e) => {
+      const menu = document.getElementById('userMenu');
+      if (menu && !e.target.closest('.user-menu')) {
+        menu.classList.remove('active');
+      }
+    });
+  </script>
+</body>
+</html>

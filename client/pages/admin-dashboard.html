@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard - EventHub</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/responsive.css">
+  <link rel="stylesheet" href="../css/animations.css">
+  <style>
+    .admin-header {
+      background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+      color: white;
+      padding: 2rem;
+      border-radius: 8px;
+      margin-bottom: 2rem;
+    }
+
+    .admin-nav {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+
+    .admin-nav-btn {
+      padding: 1rem;
+      border: 2px solid var(--border-color);
+      background: white;
+      color: var(--text-dark);
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-weight: 500;
+    }
+
+    .admin-nav-btn:hover {
+      border-color: var(--primary-color);
+      color: var(--primary-color);
+    }
+
+    .admin-nav-btn.active {
+      background: var(--primary-color);
+      color: white;
+      border-color: var(--primary-color);
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    .stat-card {
+      background: white;
+      padding: 2rem;
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+      text-align: center;
+    }
+
+    .stat-number {
+      font-size: 2.5rem;
+      font-weight: 700;
+      color: var(--primary-color);
+    }
+
+    .stat-label {
+      color: var(--text-light);
+      margin-top: 0.5rem;
+    }
+
+    .content-section {
+      display: none;
+      animation: fadeIn 0.3s ease;
+    }
+
+    .content-section.active {
+      display: block;
+    }
+
+    .table-responsive {
+      background: white;
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    thead {
+      background: var(--light-gray);
+    }
+
+    th {
+      padding: 1rem;
+      text-align: left;
+      font-weight: 600;
+      border-bottom: 2px solid var(--border-color);
+    }
+
+    td {
+      padding: 1rem;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    tbody tr:hover {
+      background: var(--light-gray);
+    }
+
+    .action-buttons {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+    }
+
+    @media (max-width: 768px) {
+      .form-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .admin-nav {
+        grid-template-columns: 1fr;
+      }
+
+      table {
+        font-size: 0.875rem;
+      }
+
+      th, td {
+        padding: 0.75rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Navigation -->
+  <nav>
+    <div class="container">
+      <div class="logo" onclick="window.location.href='index.html'" style="cursor: pointer;">📅 EventHub</div>
+      <ul>
+        <li><a href="admin-dashboard.html">Dashboard</a></li>
+        <li><a href="events.html">Events</a></li>
+      </ul>
+      <div class="auth-buttons" id="authButtons"></div>
+    </div>
+  </nav>
+
+  <!-- Admin Content -->
+  <div class="container" style="margin: 2rem 0;">
+    <div class="admin-header">
+      <h1>Admin Dashboard</h1>
+      <p>Manage events and registrations</p>
+    </div>
+
+    <!-- Navigation Buttons -->
+    <div class="admin-nav">
+      <button class="admin-nav-btn active" onclick="switchSection('dashboard')">📊 Dashboard</button>
+      <button class="admin-nav-btn" onclick="switchSection('createEvent')">➕ Create Event</button>
+      <button class="admin-nav-btn" onclick="switchSection('manageEvents')">✏️ Manage Events</button>
+      <button class="admin-nav-btn" onclick="switchSection('registrations')">👥 Registrations</button>
+      <button class="admin-nav-btn" onclick="switchSection('users')">👤 Users</button>
+    </div>
+
+    <!-- Dashboard Section -->
+    <div id="dashboardSection" class="content-section active">
+      <div class="stats-grid" id="statsGrid"></div>
+      <div id="chartsContainer"></div>
+    </div>
+
+    <!-- Create Event Section -->
+    <div id="createEventSection" class="content-section">
+      <div style="background: white; padding: 2rem; border-radius: 8px; box-shadow: var(--shadow);">
+        <h2>Create New Event</h2>
+        <form id="createEventForm">
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="title">Event Title</label>
+              <input type="text" id="title" name="title" required>
+            </div>
+            <div class="form-group">
+              <label for="category">Category</label>
+              <select id="category" name="category" required></select>
+            </div>
+            <div class="form-group">
+              <label for="date">Date</label>
+              <input type="date" id="date" name="date" required>
+            </div>
+            <div class="form-group">
+              <label for="time">Time</label>
+              <input type="time" id="time" name="time" required>
+            </div>
+            <div class="form-group">
+              <label for="location">Location</label>
+              <input type="text" id="location" name="location" required>
+            </div>
+            <div class="form-group">
+              <label for="capacity">Capacity</label>
+              <input type="number" id="capacity" name="capacity" min="1" required>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="description">Description</label>
+            <textarea id="description" name="description" required></textarea>
+          </div>
+
+          <div class="form-group">
+            <label for="image">Image URL</label>
+            <input type="url" id="image" name="image">
+          </div>
+
+          <button type="submit" class="btn btn-primary">Create Event</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Manage Events Section -->
+    <div id="manageEventsSection" class="content-section">
+      <div style="margin-bottom: 2rem;">
+        <input type="text" id="searchEvents" placeholder="Search events..." style="padding: 0.5rem; border: 1px solid var(--border-color); border-radius: 5px;">
+      </div>
+      <div class="table-responsive">
+        <table id="eventsTable">
+          <thead>
+            <tr>
+              <th>Title</th>
+              <th>Date</th>
+              <th>Location</th>
+              <th>Capacity</th>
+              <th>Registered</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="eventsTableBody">
+            <tr><td colspan="6" style="text-align: center;">Loading...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Registrations Section -->
+    <div id="registrationsSection" class="content-section">
+      <div class="table-responsive">
+        <table id="registrationsTable">
+          <thead>
+            <tr>
+              <th>User</th>
+              <th>Event</th>
+              <th>Registration Date</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="registrationsTableBody">
+            <tr><td colspan="5" style="text-align: center;">Loading...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Users Section -->
+    <div id="usersSection" class="content-section">
+      <div class="table-responsive">
+        <table id="usersTable">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Email</th>
+              <th>Role</th>
+              <th>Created</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="usersTableBody">
+            <tr><td colspan="5" style="text-align: center;">Loading...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer>
+    <div class="container">
+      <p>&copy; 2026 EventHub. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <script src="../js/api.js"></script>
+  <script src="../js/utils.js"></script>
+  <script>
+    page.requireAdmin();
+
+    async function loadDashboard() {
+      try {
+        const { dashboard } = await api.getDashboard();
+
+        const statsGrid = document.getElementById('statsGrid');
+        statsGrid.innerHTML = `
+          <div class="stat-card fade-in">
+            <div class="stat-number">${dashboard.totalUsers}</div>
+            <div class="stat-label">Total Users</div>
+          </div>
+          <div class="stat-card fade-in">
+            <div class="stat-number">${dashboard.totalEvents}</div>
+            <div class="stat-label">Total Events</div>
+          </div>
+          <div class="stat-card fade-in">
+            <div class="stat-number">${dashboard.totalRegistrations}</div>
+            <div class="stat-label">Total Registrations</div>
+          </div>
+          <div class="stat-card fade-in">
+            <div class="stat-number">${dashboard.upcomingEvents}</div>
+            <div class="stat-label">Upcoming Events</div>
+          </div>
+        `;
+      } catch (error) {
+        Toast.error('Error loading dashboard');
+      }
+    }
+
+    async function loadCategories() {
+      try {
+        const { categories } = await api.getCategories();
+        const select = document.getElementById('category');
+        select.innerHTML = categories.map(cat => `<option value="${cat}">${cat}</option>`).join('');
+      } catch (error) {
+        console.error(error);
+      }
+    }
+
+    async function loadEvents() {
+      try {
+        const { events } = await api.getEvents({ limit: 100 });
+        const tbody = document.getElementById('eventsTableBody');
+        tbody.innerHTML = events.map(event => `
+          <tr>
+            <td>${event.title}</td>
+            <td>${dateUtils.formatDate(event.date)}</td>
+            <td>${event.location}</td>
+            <td>${event.capacity}</td>
+            <td>${event.registeredCount}/${event.capacity}</td>
+            <td class="action-buttons">
+              <button class="btn btn-primary btn-small" onclick="editEvent('${event._id}')">Edit</button>
+              <button class="btn btn-danger btn-small" onclick="deleteEvent('${event._id}')">Delete</button>
+            </td>
+          </tr>
+        `).join('');
+      } catch (error) {
+        Toast.error('Error loading events');
+      }
+    }
+
+    async function loadRegistrations() {
+      try {
+        const { registrations } = await api.getAllRegistrations({ limit: 100 });
+        const tbody = document.getElementById('registrationsTableBody');
+        tbody.innerHTML = registrations.map(reg => `
+          <tr>
+            <td>${reg.userId.name}</td>
+            <td>${reg.eventId.title}</td>
+            <td>${dateUtils.formatDate(reg.registrationDate)}</td>
+            <td><span class="badge status-${reg.status}">${reg.status}</span></td>
+            <td class="action-buttons">
+              <button class="btn btn-success btn-small" onclick="markAttendance('${reg._id}')">Mark Attended</button>
+            </td>
+          </tr>
+        `).join('');
+      } catch (error) {
+        Toast.error('Error loading registrations');
+      }
+    }
+
+    async function loadUsers() {
+      try {
+        const { users } = await api.getAllUsers({ limit: 100 });
+        const tbody = document.getElementById('usersTableBody');
+        tbody.innerHTML = users.map(user => `
+          <tr>
+            <td>${user.name}</td>
+            <td>${user.email}</td>
+            <td>${user.role}</td>
+            <td>${dateUtils.formatDate(user.createdAt)}</td>
+            <td class="action-buttons">
+              <button class="btn btn-secondary btn-small" onclick="changeRole('${user._id}', '${user.role}')">Change Role</button>
+              <button class="btn btn-danger btn-small" onclick="deleteUser('${user._id}')">Delete</button>
+            </td>
+          </tr>
+        `).join('');
+      } catch (error) {
+        Toast.error('Error loading users');
+      }
+    }
+
+    document.getElementById('createEventForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const data = {
+        title: document.getElementById('title').value,
+        description: document.getElementById('description').value,
+        date: document.getElementById('date').value,
+        time: document.getElementById('time').value,
+        location: document.getElementById('location').value,
+        category: document.getElementById('category').value,
+        capacity: parseInt(document.getElementById('capacity').value),
+        image: document.getElementById('image').value,
+      };
+
+      try {
+        await api.createEvent(data);
+        Toast.success('Event created successfully');
+        e.target.reset();
+        switchSection('manageEvents');
+        loadEvents();
+      } catch (error) {
+        Toast.error('Error creating event');
+      }
+    });
+
+    function editEvent(eventId) {
+      // TODO: Implement edit event
+      Toast.info('Edit event feature coming soon');
+    }
+
+    async function deleteEvent(eventId) {
+      if (confirm('Are you sure you want to delete this event?')) {
+        try {
+          await api.deleteEvent(eventId);
+          Toast.success('Event deleted');
+          loadEvents();
+        } catch (error) {
+          Toast.error('Error deleting event');
+        }
+      }
+    }
+
+    async function markAttendance(registrationId) {
+      try {
+        await api.markAttendance(registrationId);
+        Toast.success('Attendance marked');
+        loadRegistrations();
+      } catch (error) {
+        Toast.error('Error marking attendance');
+      }
+    }
+
+    function changeRole(userId, currentRole) {
+      const newRole = currentRole === 'admin' ? 'user' : 'admin';
+      if (confirm(`Change user role to ${newRole}?`)) {
+        api.updateUserRole(userId, { role: newRole }).then(() => {
+          Toast.success('Role updated');
+          loadUsers();
+        }).catch(() => {
+          Toast.error('Error updating role');
+        });
+      }
+    }
+
+    function deleteUser(userId) {
+      if (confirm('Are you sure you want to delete this user?')) {
+        api.deleteUser(userId).then(() => {
+          Toast.success('User deleted');
+          loadUsers();
+        }).catch(() => {
+          Toast.error('Error deleting user');
+        });
+      }
+    }
+
+    function switchSection(section) {
+      document.querySelectorAll('.content-section').forEach(el => {
+        el.classList.remove('active');
+      });
+      document.querySelectorAll('.admin-nav-btn').forEach(el => {
+        el.classList.remove('active');
+      });
+
+      document.getElementById(section + 'Section').classList.add('active');
+      event.target.classList.add('active');
+
+      if (section === 'dashboard') loadDashboard();
+      if (section === 'manageEvents') loadEvents();
+      if (section === 'registrations') loadRegistrations();
+      if (section === 'users') loadUsers();
+    }
+
+    function updateUI() {
+      const authButtons = document.getElementById('authButtons');
+      const user = storage.getUser();
+      authButtons.innerHTML = `
+        <div class="user-menu">
+          <button onclick="toggleMenu()">${user.name} ▼</button>
+          <div class="dropdown-menu" id="userMenu">
+            <a href="profile.html">Profile</a>
+            <a href="#" onclick="logout(); return false;">Logout</a>
+          </div>
+        </div>
+      `;
+    }
+
+    function toggleMenu() {
+      const menu = document.getElementById('userMenu');
+      if (menu) {
+        menu.classList.toggle('active');
+      }
+    }
+
+    function logout() {
+      storage.clearUser();
+      api.logout();
+      window.location.href = 'index.html';
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      updateUI();
+      loadCategories();
+      loadDashboard();
+    });
+
+    document.addEventListener('click', (e) => {
+      const menu = document.getElementById('userMenu');
+      if (menu && !e.target.closest('.user-menu')) {
+        menu.classList.remove('active');
+      }
+    });
+  </script>
+</body>
+</html>

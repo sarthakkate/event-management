@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Register - EventHub</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/responsive.css">
+  <link rel="stylesheet" href="../css/animations.css">
+  <style>
+    .auth-container {
+      max-width: 500px;
+      margin: 2rem auto;
+      padding: 2rem;
+    }
+
+    .auth-card {
+      background: white;
+      border-radius: 8px;
+      box-shadow: var(--shadow-lg);
+      padding: 2rem;
+    }
+
+    .auth-header {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    .auth-header h1 {
+      color: var(--primary-color);
+      margin-bottom: 0.5rem;
+    }
+
+    .auth-link {
+      text-align: center;
+      margin-top: 1.5rem;
+    }
+
+    .auth-link a {
+      color: var(--primary-color);
+    }
+  </style>
+</head>
+<body>
+  <!-- Navigation -->
+  <nav>
+    <div class="container">
+      <div class="logo" onclick="window.location.href='index.html'" style="cursor: pointer;">📅 EventHub</div>
+    </div>
+  </nav>
+
+  <!-- Auth Container -->
+  <div class="auth-container">
+    <div class="auth-card fade-in">
+      <div class="auth-header">
+        <h1>Create Account</h1>
+        <p>Join EventHub today</p>
+      </div>
+
+      <form id="registerForm">
+        <div class="form-group">
+          <label for="name">Full Name</label>
+          <input
+            type="text"
+            id="name"
+            name="name"
+            placeholder="John Doe"
+            required
+          >
+        </div>
+
+        <div class="form-group">
+          <label for="email">Email Address</label>
+          <input
+            type="email"
+            id="email"
+            name="email"
+            placeholder="your@email.com"
+            required
+          >
+        </div>
+
+        <div class="form-group">
+          <label for="password">Password</label>
+          <input
+            type="password"
+            id="password"
+            name="password"
+            placeholder="At least 6 characters"
+            required
+          >
+        </div>
+
+        <div class="form-group">
+          <label for="confirmPassword">Confirm Password</label>
+          <input
+            type="password"
+            id="confirmPassword"
+            name="confirmPassword"
+            placeholder="Confirm your password"
+            required
+          >
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-block">Create Account</button>
+      </form>
+
+      <div class="auth-link">
+        Already have an account? <a href="login.html">Login here</a>
+      </div>
+
+      <button
+        class="btn btn-secondary btn-block"
+        style="margin-top: 1rem;"
+        onclick="window.location.href='index.html'"
+      >
+        Back to Home
+      </button>
+    </div>
+  </div>
+
+  <script src="../js/api.js"></script>
+  <script src="../js/utils.js"></script>
+  <script>
+    document.getElementById('registerForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const formData = {
+        name: document.getElementById('name').value,
+        email: document.getElementById('email').value,
+        password: document.getElementById('password').value,
+        confirmPassword: document.getElementById('confirmPassword').value,
+      };
+
+      // Validate form
+      const rules = {
+        name: { required: true, minLength: 2, label: 'Name' },
+        email: { required: true, email: true },
+        password: { required: true, minLength: 6 },
+        confirmPassword: { required: true, custom: (value) => {
+          if (value !== formData.password) return 'Passwords do not match';
+        }},
+      };
+
+      const errors = FormValidator.validate(formData, rules);
+      if (Object.keys(errors).length > 0) {
+        FormValidator.showErrors(document.getElementById('registerForm'), errors);
+        return;
+      }
+
+      try {
+        Loading.show();
+        const { token, user } = await api.register(formData);
+
+        // Store auth data
+        storage.setToken(token);
+        storage.setUser(user);
+
+        Toast.success('Registration successful!');
+
+        // Redirect
+        setTimeout(() => {
+          window.location.href = 'events.html';
+        }, 1000);
+      } catch (error) {
+        Toast.error(error.message || 'Registration failed');
+      } finally {
+        Loading.hide();
+      }
+    });
+
+    // Redirect if already logged in
+    if (storage.isAuthenticated()) {
+      window.location.href = 'events.html';
+    }
+  </script>
+</body>
+</html>

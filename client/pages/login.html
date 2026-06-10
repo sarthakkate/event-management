@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login - EventHub</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/responsive.css">
+  <link rel="stylesheet" href="../css/animations.css">
+  <style>
+    .auth-container { max-width: 440px; margin: 3rem auto; padding: 0 1rem; }
+    .auth-card {
+      background: #fff;
+      border: 1px solid #e8e8e8;
+      border-radius: 8px;
+      padding: 2.5rem;
+    }
+    .auth-header { text-align: center; margin-bottom: 2rem; }
+    .auth-header h1 { color: #0a0a0a; font-size: 1.6rem; }
+    .auth-header p  { color: #707070; margin: 0; font-size: 0.9rem; }
+    .auth-link { text-align: center; margin-top: 1.5rem; font-size: 0.875rem; color: #707070; }
+    .auth-link a { color: #0a0a0a; font-weight: 600; }
+    .divider { text-align: center; margin: 1.25rem 0; color: #a0a0a0; font-size: 0.8rem;
+               display: flex; align-items: center; gap: 0.75rem; }
+    .divider::before, .divider::after {
+      content: ''; flex: 1; height: 1px; background: #e8e8e8;
+    }
+  </style>
+</head>
+<body>
+  <!-- Navigation -->
+  <nav>
+    <div class="container">
+      <div class="logo" onclick="window.location.href='index.html'" style="cursor: pointer;">📅 EventHub</div>
+    </div>
+  </nav>
+
+  <!-- Auth Container -->
+  <div class="auth-container">
+    <div class="auth-card fade-in">
+      <div class="auth-header">
+        <h1>Welcome Back</h1>
+        <p>Login to your EventHub account</p>
+      </div>
+
+      <form id="loginForm">
+        <div class="form-group">
+          <label for="email">Email Address</label>
+          <input
+            type="email"
+            id="email"
+            name="email"
+            placeholder="your@email.com"
+            required
+          >
+        </div>
+
+        <div class="form-group">
+          <label for="password">Password</label>
+          <input
+            type="password"
+            id="password"
+            name="password"
+            placeholder="Enter your password"
+            required
+          >
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-block">Login</button>
+      </form>
+
+      <div class="auth-link">
+        Don't have an account? <a href="register.html">Sign up here</a>
+      </div>
+
+      <div class="divider">Or</div>
+
+      <button
+        class="btn btn-secondary btn-block"
+        onclick="window.location.href='index.html'"
+      >
+        Back to Home
+      </button>
+    </div>
+  </div>
+
+  <script src="../js/api.js"></script>
+  <script src="../js/utils.js"></script>
+  <script>
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+
+      try {
+        Loading.show();
+        const { token, user } = await api.login({ email, password });
+
+        // Store auth data
+        storage.setToken(token);
+        storage.setUser(user);
+
+        Toast.success('Login successful!');
+
+        // Redirect based on role
+        setTimeout(() => {
+          if (user.role === 'admin') {
+            window.location.href = 'admin-dashboard.html';
+          } else {
+            window.location.href = 'events.html';
+          }
+        }, 1000);
+      } catch (error) {
+        Toast.error(error.message || 'Login failed');
+      } finally {
+        Loading.hide();
+      }
+    });
+
+    // Redirect if already logged in
+    if (storage.isAuthenticated()) {
+      window.location.href = 'events.html';
+    }
+  </script>
+</body>
+</html>

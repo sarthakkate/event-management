@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Event Management System - Home</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/responsive.css">
+  <link rel="stylesheet" href="../css/animations.css">
+  <style>
+    .hero-buttons {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    .features {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 1.5rem;
+    }
+    .feature-card {
+      padding: 2rem;
+      background: #f5f5f5;
+      border: 1px solid #e8e8e8;
+      border-radius: 8px;
+      text-align: center;
+    }
+    .feature-icon { font-size: 2rem; margin-bottom: 1rem; filter: grayscale(1); }
+    .cta-section {
+      background: #0a0a0a;
+      color: white;
+      text-align: center;
+      padding: 3rem;
+      border-radius: 8px;
+      margin-top: 3rem;
+    }
+    .cta-section h2, .cta-section p { color: white; }
+    .cta-section p { color: #a0a0a0; }
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 1.5rem;
+      text-align: center;
+    }
+    .stat-card { padding: 2rem; border: 1px solid #e8e8e8; border-radius: 8px; }
+    .stat-number { font-size: 2.5rem; font-weight: 700; color: #0a0a0a; }
+    .stat-label  { color: #707070; margin-top: 0.25rem; font-size: 0.85rem; }
+  </style>
+</head>
+<body>
+  <!-- Navigation -->
+  <nav>
+    <div class="container">
+      <div class="logo">📅 EventHub</div>
+      <ul>
+        <li><a href="#features">Features</a></li>
+        <li><a href="#about">About</a></li>
+      </ul>
+      <div class="auth-buttons" id="authButtons">
+        <a href="login.html" class="btn btn-secondary">Login</a>
+        <a href="register.html" class="btn btn-primary">Sign Up</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero Section -->
+  <section class="hero">
+    <div class="container">
+      <h1>Welcome to EventHub</h1>
+      <p>Discover, Register, and Manage Events with Ease</p>
+      <div class="hero-buttons">
+        <button class="btn btn-primary" onclick="window.location.href='events.html'">Explore Events</button>
+        <button class="btn btn-secondary" onclick="window.location.href='register.html'">Get Started</button>
+      </div>
+    </div>
+  </section>
+
+
+
+ 
+
+  <script src="../js/api.js"></script>
+  <script src="../js/utils.js"></script>
+  <script>
+    // Update auth buttons based on login status
+    function updateAuthButtons() {
+      const authButtons = document.getElementById('authButtons');
+      if (storage.isAuthenticated()) {
+        const user = storage.getUser();
+        authButtons.innerHTML = `
+          <div class="user-menu">
+            <button onclick="toggleMenu()">${user.name} ▼</button>
+            <div class="dropdown-menu" id="userMenu">
+              <a href="profile.html">Profile</a>
+              <a href="my-events.html">My Events</a>
+              ${storage.isAdmin() ? '<a href="admin-dashboard.html">Admin Dashboard</a>' : ''}
+              <a href="#" onclick="logout(); return false;">Logout</a>
+            </div>
+          </div>
+        `;
+      }
+    }
+
+    function toggleMenu() {
+      const menu = document.getElementById('userMenu');
+      if (menu) {
+        menu.classList.toggle('active');
+      }
+    }
+
+    function logout() {
+      storage.clearUser();
+      api.logout();
+      window.location.href = 'index.html';
+    }
+
+    async function loadDashboardStats() {
+      try {
+        if (!storage.isAdmin()) return;
+        const { dashboard } = await api.getDashboard();
+        document.getElementById('userCount').textContent = dashboard.totalUsers;
+        document.getElementById('eventCount').textContent = dashboard.totalEvents;
+        document.getElementById('regCount').textContent = dashboard.totalRegistrations;
+      } catch (error) {
+        console.error('Error loading stats:', error);
+      }
+    }
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', () => {
+      updateAuthButtons();
+      loadDashboardStats();
+    });
+
+    // Close dropdown when clicking outside
+    document.addEventListener('click', (e) => {
+      const menu = document.getElementById('userMenu');
+      if (menu && !e.target.closest('.user-menu')) {
+        menu.classList.remove('active');
+      }
+    });
+  </script>
+</body>
+</html>

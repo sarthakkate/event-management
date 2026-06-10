@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Events - EventHub</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/responsive.css">
+  <link rel="stylesheet" href="../css/animations.css">
+  <style>
+    .my-events-container {
+      margin: 2rem 0;
+    }
+
+    .events-tabs {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 2rem;
+      border-bottom: 2px solid var(--border-color);
+    }
+
+    .events-tabs button {
+      padding: 1rem;
+      border: none;
+      background: none;
+      cursor: pointer;
+      color: var(--text-light);
+      border-bottom: 2px solid transparent;
+      transition: all 0.3s ease;
+      font-size: 1rem;
+      font-weight: 500;
+    }
+
+    .events-tabs button.active {
+      color: var(--primary-color);
+      border-bottom-color: var(--primary-color);
+    }
+
+    .events-list {
+      display: grid;
+      gap: 1.5rem;
+    }
+
+    .registration-card {
+      background: white;
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+      padding: 1.5rem;
+      display: grid;
+      grid-template-columns: 200px 1fr;
+      gap: 1.5rem;
+      align-items: center;
+    }
+
+    .registration-image {
+      width: 100%;
+      height: 150px;
+      object-fit: cover;
+      border-radius: 8px;
+    }
+
+    .registration-content {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .registration-title {
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: var(--text-dark);
+    }
+
+    .registration-meta {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      font-size: 0.875rem;
+      color: var(--text-light);
+    }
+
+    .registration-meta span {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .registration-status-badge {
+      display: inline-block;
+      padding: 0.35rem 0.75rem;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+
+    .status-registered {
+      background: #c6f6d5;
+      color: #22543d;
+    }
+
+    .status-attended {
+      background: #c6f6d5;
+      color: #22543d;
+    }
+
+    .status-cancelled {
+      background: #fed7d7;
+      color: #742a2a;
+    }
+
+    .registration-actions {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+
+    .no-registrations {
+      text-align: center;
+      padding: 3rem;
+      color: var(--text-light);
+      background: white;
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+    }
+
+    @media (max-width: 768px) {
+      .registration-card {
+        grid-template-columns: 1fr;
+      }
+
+      .registration-image {
+        height: 200px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Navigation -->
+  <nav>
+    <div class="container">
+      <div class="logo" onclick="window.location.href='index.html'" style="cursor: pointer;">📅 EventHub</div>
+      <ul>
+        <li><a href="events.html">Events</a></li>
+        <li><a href="my-events.html">My Events</a></li>
+      </ul>
+      <div class="auth-buttons" id="authButtons"></div>
+    </div>
+  </nav>
+
+  <!-- Content -->
+  <div class="container my-events-container">
+    <h1 style="margin-bottom: 2rem;">My Events</h1>
+
+    <div class="events-tabs">
+      <button class="active" onclick="filterByStatus('registered')">Registered</button>
+      <button onclick="filterByStatus('attended')">Attended</button>
+      <button onclick="filterByStatus('cancelled')">Cancelled</button>
+    </div>
+
+    <div id="eventsContainer" class="events-list"></div>
+
+    <div id="noEvents" class="no-registrations hidden">
+      <p>No events found in this category.</p>
+    </div>
+
+    <div id="loadingContainer" class="loading hidden">
+      <div class="loader"></div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer>
+    <div class="container">
+      <p>&copy; 2026 EventHub. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <script src="../js/api.js"></script>
+  <script src="../js/utils.js"></script>
+  <script>
+    page.requireAuth();
+
+    let currentStatus = 'registered';
+
+    async function loadRegistrations() {
+      try {
+        document.getElementById('loadingContainer').classList.remove('hidden');
+        document.getElementById('eventsContainer').innerHTML = '';
+
+        const { registrations } = await api.getUserRegistrations();
+        const filtered = currentStatus === 'all' 
+          ? registrations 
+          : registrations.filter(r => r.status === currentStatus);
+
+        if (filtered.length === 0) {
+          document.getElementById('noEvents').classList.remove('hidden');
+        } else {
+          document.getElementById('noEvents').classList.add('hidden');
+          displayRegistrations(filtered);
+        }
+      } catch (error) {
+        Toast.error('Error loading registrations');
+        console.error(error);
+      } finally {
+        document.getElementById('loadingContainer').classList.add('hidden');
+      }
+    }
+
+    function displayRegistrations(registrations) {
+      const container = document.getElementById('eventsContainer');
+      container.innerHTML = registrations.map(reg => {
+        const event = reg.eventId;
+        const isPast = dateUtils.isPastDate(event.date);
+
+        return `
+          <div class="registration-card fade-in">
+            <img src="${event.image}" alt="${event.title}" class="registration-image">
+            <div class="registration-content">
+              <h3 class="registration-title">${event.title}</h3>
+              <div class="registration-meta">
+                <span>📅 ${dateUtils.formatDate(event.date)}</span>
+                <span>🕐 ${event.time}</span>
+                <span>📍 ${event.location}</span>
+                <span class="registration-status-badge status-${reg.status}">
+                  ${reg.status === 'registered' ? 'Registered' : reg.status === 'attended' ? 'Attended' : 'Cancelled'}
+                </span>
+              </div>
+              <div class="registration-actions">
+                <button class="btn btn-primary btn-small" onclick="viewEvent('${event._id}')">View Event</button>
+                ${!isPast && reg.status === 'registered' ? `<button class="btn btn-danger btn-small" onclick="cancelRegistration('${reg._id}')">Cancel</button>` : ''}
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function filterByStatus(status) {
+      currentStatus = status;
+      document.querySelectorAll('.events-tabs button').forEach(btn => {
+        btn.classList.remove('active');
+      });
+      event.target.classList.add('active');
+      loadRegistrations();
+    }
+
+    function viewEvent(eventId) {
+      window.location.href = `event-details.html?id=${eventId}`;
+    }
+
+    async function cancelRegistration(registrationId) {
+      if (confirm('Are you sure you want to cancel this registration?')) {
+        try {
+          await api.cancelRegistration(registrationId);
+          Toast.success('Registration cancelled');
+          loadRegistrations();
+        } catch (error) {
+          Toast.error('Error cancelling registration');
+        }
+      }
+    }
+
+    function updateUI() {
+      const authButtons = document.getElementById('authButtons');
+
+      if (storage.isAuthenticated()) {
+        const user = storage.getUser();
+        authButtons.innerHTML = `
+          <div class="user-menu">
+            <button onclick="toggleMenu()">${user.name} ▼</button>
+            <div class="dropdown-menu" id="userMenu">
+              <a href="profile.html">Profile</a>
+              <a href="my-events.html">My Events</a>
+              ${storage.isAdmin() ? '<a href="admin-dashboard.html">Admin Dashboard</a>' : ''}
+              <a href="#" onclick="logout(); return false;">Logout</a>
+            </div>
+          </div>
+        `;
+      }
+    }
+
+    function toggleMenu() {
+      const menu = document.getElementById('userMenu');
+      if (menu) {
+        menu.classList.toggle('active');
+      }
+    }
+
+    function logout() {
+      storage.clearUser();
+      api.logout();
+      window.location.href = 'index.html';
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      updateUI();
+      loadRegistrations();
+    });
+
+    document.addEventListener('click', (e) => {
+      const menu = document.getElementById('userMenu');
+      if (menu && !e.target.closest('.user-menu')) {
+        menu.classList.remove('active');
+      }
+    });
+  </script>
+</body>
+</html>
